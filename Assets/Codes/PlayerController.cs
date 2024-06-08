@@ -13,6 +13,8 @@ namespace TarodevController
         private FrameInput _frameInput;
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
+        [SerializeField] private GameObject WinPoint;
+        bool PlayerWin = false;
 
         #region Interface
 
@@ -31,11 +33,28 @@ namespace TarodevController
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
         }
+          void OnCollisionEnter2D(Collision2D col)
+        {
+            if (col.gameObject.CompareTag("WinPoint"))
+            {
+                PlayerWin = true;
+                print("col");
+            }
+
+        }
+        private void WinGame()
+        {
+            if (PlayerWin == true)
+            {
+                _rb.velocity = new Vector2(0, _rb.velocity.y);
+            }
+        }
 
         private void Update()
         {
             _time += Time.deltaTime;
             GatherInput();
+            WinGame();
         }
 
         private void GatherInput()
@@ -172,7 +191,18 @@ namespace TarodevController
             else
             {
                 var inAirGravity = _stats.FallAcceleration;
-                if (_endedJumpEarly && _frameVelocity.y > 0) inAirGravity *= _stats.JumpEndEarlyGravityModifier;
+
+                // Aplica a modificação de gravidade durante a subida
+                if (_frameVelocity.y > 0)
+                {
+                    inAirGravity *= _stats.JumpAscentGravityModifier;
+                }
+
+                if (_endedJumpEarly && _frameVelocity.y > 0)
+                {
+                    inAirGravity *= _stats.JumpEndEarlyGravityModifier;
+                }
+
                 _frameVelocity.y = Mathf.MoveTowards(_frameVelocity.y, -_stats.MaxFallSpeed, inAirGravity * Time.fixedDeltaTime);
             }
         }
@@ -203,4 +233,7 @@ namespace TarodevController
         public event Action Jumped;
         public Vector2 FrameInput { get; }
     }
+
+
+
 }
