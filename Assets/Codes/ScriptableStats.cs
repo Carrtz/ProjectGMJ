@@ -59,5 +59,15 @@ namespace TarodevController
 
         [Tooltip("The amount of time we buffer a jump. This allows jump input before actually hitting the ground")]
         public float JumpBuffer = .2f;
+
+        [Header("DASHING")]
+        [Tooltip("The power of the dash")]
+        public float DashPower = 24f;
+
+        [Tooltip("The duration of the dash")]
+        public float DashDuration = 0.2f;
+
+        [Tooltip("Cooldown period before the dash can be used again")]
+        public float DashCooldown = 1f;
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections;
 
 namespace TarodevController
 {
@@ -15,6 +16,9 @@ namespace TarodevController
         private bool _cachedQueryStartInColliders;
         [SerializeField] private GameObject WinPoint;
         bool PlayerWin = false;
+        private bool isDashing = false;
+        private float lastDashTime;
+        [SerializeField] TrailRenderer tr;
 
         #region Interface
 
@@ -26,10 +30,12 @@ namespace TarodevController
 
         private float _time;
 
+
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
             _col = GetComponent<CapsuleCollider2D>();
+            tr = GetComponent<TrailRenderer>();
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
         }
@@ -50,11 +56,14 @@ namespace TarodevController
             }
         }
 
+
         private void Update()
         {
             _time += Time.deltaTime;
             GatherInput();
             WinGame();
+            ApplyMoviement();
+            HandleDashing();
         }
 
         private void GatherInput()
@@ -78,6 +87,58 @@ namespace TarodevController
                 _timeJumpWasPressed = _time;
             }
         }
+        private void HandleDashing()
+        {
+            if (Time.time - lastDashTime < _stats.DashCooldown || isDashing)
+            {
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftShift)) // Using Left Shift for dash
+            {
+                StartCoroutine(Dash());
+            }
+        }
+        private IEnumerator Dash()
+        {
+            isDashing = true;
+            lastDashTime = Time.time;
+
+            // Ativa o TrailRenderer
+            if (tr != null)
+            {
+                tr.emitting = true;
+            }
+
+            // Armazena o valor original da gravidade
+            float originalGravity = _rb.gravityScale;
+            // Define a gravidade para zero para prevenir a queda
+            _rb.gravityScale = 0;
+
+            // Define a velocidade do dash
+            _frameVelocity.x = _stats.DashPower * Mathf.Sign(_rb.velocity.x); // Dash na direção atual
+
+            yield return new WaitForSeconds(_stats.DashDuration);
+
+            // Restaura o valor original da gravidade
+            _rb.gravityScale = originalGravity;
+
+            // Desativa o TrailRenderer
+            if (tr != null)
+            {
+                tr.emitting = false;
+            }
+
+            isDashing = false;
+        }
+        private void ApplyMoviement()
+        {
+            if (!isDashing)
+            {
+                _rb.velocity = _frameVelocity;
+            }
+        }
+
 
         private void FixedUpdate()
         {
@@ -233,6 +294,7 @@ namespace TarodevController
         public event Action Jumped;
         public Vector2 FrameInput { get; }
     }
+
 
 
 
