@@ -1,0 +1,20 @@
+2MS562XH License, original version
+---------------------------------------------------------------
+This product is provided 'as-is', without warranty of any kind.
+In no event will the authors or distibutors be held liable for
+any harm arising from the use of this product.
+
+Permission is granted to use, copy, modify, distribute this
+product for purpose of any kind with the following conditions:
+
+1. Attribution is not required.
+
+2. The origin of this product can be misrepresented; you can
+   claim that you made this product.
+
+3. This license may not be removed or altered from any source
+   distribution.
+
+4. This license can be removed or altered from any altered
+   source distribution.
+---------------------------------------------------------------

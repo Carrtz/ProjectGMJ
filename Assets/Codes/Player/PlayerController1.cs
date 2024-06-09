@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 namespace TarodevController
 {
@@ -19,6 +20,7 @@ namespace TarodevController
         private bool isDashing = false;
         private float lastDashTime;
         [SerializeField] TrailRenderer tr;
+        private bool isFacingRight = true;
 
         #region Interface
 
@@ -30,7 +32,7 @@ namespace TarodevController
 
         private float _time;
 
-
+        
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
@@ -38,8 +40,14 @@ namespace TarodevController
             tr = GetComponent<TrailRenderer>();
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
+
+            if (PlayerWin == false)
+            {
+                _stats.MaxSpeed = 10;
+                _stats.JumpPower = 25;
+            }
         }
-          void OnCollisionEnter2D(Collision2D col)
+        private void OnTriggerEnter2D(Collider2D col)
         {
             if (col.gameObject.CompareTag("WinPoint"))
             {
@@ -52,9 +60,13 @@ namespace TarodevController
         {
             if (PlayerWin == true)
             {
-                _rb.velocity = new Vector2(0, _rb.velocity.y);
+                print("playerwin");
+                _stats.MaxSpeed = 0;
+                _stats.JumpPower = 0;
             }
+           
         }
+
 
 
         private void Update()
@@ -64,6 +76,34 @@ namespace TarodevController
             WinGame();
             ApplyMoviement();
             HandleDashing();
+            Flip();
+            if (Input.GetKeyDown(KeyCode.RightShift))
+            {
+                _stats.MaxSpeed = 10;
+                _stats.MaxFallSpeed = 60;
+                _stats.JumpPower = 10;
+            }
+        }
+        private void Flip()
+        {
+            {
+                // Only flip if there is horizontal movement
+                if (_frameInput.Move.x != 0)
+                {
+                    bool movingRight = _frameInput.Move.x > 0;
+                    if (movingRight != isFacingRight)
+                    {
+                        isFacingRight = movingRight;
+                        Vector3 localScale = transform.localScale;
+                        localScale.x *= -1f;
+                        transform.localScale = localScale;
+                    }
+                }
+            }
+            if (isFacingRight == false)
+            {
+                print("fli");
+            }
         }
 
         private void GatherInput()
@@ -110,18 +150,44 @@ namespace TarodevController
                 tr.emitting = true;
             }
 
-            // Armazena o valor original da gravidade
-            float originalGravity = _rb.gravityScale;
-            // Define a gravidade para zero para prevenir a queda
-            _rb.gravityScale = 0;
+            // Armazena o valor original da gravidade e das outras propriedades
+            float originalFallAcceleration = _stats.FallAcceleration;
+            float originalJumpPower = _stats.JumpPower;
+            float originalJumpEndEarlyGravityModifier = _stats.JumpEndEarlyGravityModifier;
+            float originalJumpAscentGravityModifier = _stats.JumpAscentGravityModifier;
+            float originalMaxFallSpeed = _stats.MaxFallSpeed;
+
+            // Zera a gravidade e outras propriedades relacionadas ao movimento vertical
+            _stats.FallAcceleration = 0;
+            _stats.JumpPower = 0;
+            _stats.JumpEndEarlyGravityModifier = 0;
+            _stats.JumpAscentGravityModifier = 0;
+            _stats.MaxFallSpeed = 0;
+
+            // Zera a velocidade vertical do jogador
+            _rb.velocity = new Vector2(0, 0);
+
+            // Armazena a posição vertical atual do jogador
+            float initialYPosition = transform.position.y;
 
             // Define a velocidade do dash
-            _frameVelocity.x = _stats.DashPower * Mathf.Sign(_rb.velocity.x); // Dash na direção atual
+            float dashDirection = isFacingRight ? 1 : -1;
+            _frameVelocity.x = _stats.DashPower * dashDirection;
 
-            yield return new WaitForSeconds(_stats.DashDuration);
+            float dashEndTime = Time.time + _stats.DashDuration;
+            while (Time.time < dashEndTime)
+            {
+                // Mantém a posição y do jogador constante
+                transform.position = new Vector3(transform.position.x, initialYPosition, transform.position.z);
+                yield return null;
+            }
 
-            // Restaura o valor original da gravidade
-            _rb.gravityScale = originalGravity;
+            // Restaura o valor original das propriedades
+            _stats.FallAcceleration = originalFallAcceleration;
+            _stats.JumpPower = originalJumpPower;
+            _stats.JumpEndEarlyGravityModifier = originalJumpEndEarlyGravityModifier;
+            _stats.JumpAscentGravityModifier = originalJumpAscentGravityModifier;
+            _stats.MaxFallSpeed = originalMaxFallSpeed;
 
             // Desativa o TrailRenderer
             if (tr != null)
