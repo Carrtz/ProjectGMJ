@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 5781520444175314468}
   - component: {fileID: 8115145773288130366}
   - component: {fileID: 965805540140629955}
-  - component: {fileID: 7901246476566870758}
+  - component: {fileID: 5376399187562778524}
   m_Layer: 0
-  m_Name: PU
+  m_Name: PU (1)
   m_TagString: Speed
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 2760929275293883122}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20.3, y: 4.39, z: 0}
+  m_LocalPosition: {x: 41.435036, y: 4.484052, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -131,7 +131,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &7901246476566870758
+--- !u!114 &5376399187562778524
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,8 +140,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 2760929275293883122}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e718318f3819174eb46ea7ddba3ce0a, type: 3}
+  m_Script: {fileID: 11500000, guid: 6fa9bbf020d268d448c4af19387a97bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpeedPU: {fileID: 2760929275293883122}
-  playerStats: {fileID: 11400000, guid: 05e6a06c5af93134ab98ff12e2c27265, type: 2}
+  SpeedPU: {fileID: 0}
+  SO: {fileID: 11400000, guid: 05e6a06c5af93134ab98ff12e2c27265, type: 2}

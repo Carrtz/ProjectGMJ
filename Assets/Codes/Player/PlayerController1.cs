@@ -1,11 +1,9 @@
 using System;
 using UnityEngine;
 using System.Collections;
-using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 namespace TarodevController
 {
-    
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class PlayerController : MonoBehaviour, IPlayerController
     {
@@ -16,12 +14,14 @@ namespace TarodevController
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
         [SerializeField] private GameObject WinPoint;
-        bool PlayerWin = false;
+        public bool PlayerWin = false; // Mudado para público
         private bool isDashing = false;
         private float lastDashTime;
-        [SerializeField] TrailRenderer tr;
+        [SerializeField] private TrailRenderer tr;
         private bool isFacingRight = true;
-
+        [SerializeField] private bool canDoubleJump = false; // flag to check if double jump is available
+        private Timer timer;
+     
         #region Interface
 
         public Vector2 FrameInput => _frameInput.Move;
@@ -32,21 +32,28 @@ namespace TarodevController
 
         private float _time;
 
+        private void Start()
+        {
+          
+        }
         
+
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
             _col = GetComponent<CapsuleCollider2D>();
             tr = GetComponent<TrailRenderer>();
+            timer = FindObjectOfType<Timer>();
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
 
-            if (PlayerWin == false)
+            if (!PlayerWin)
             {
                 _stats.MaxSpeed = 10;
                 _stats.JumpPower = 25;
             }
         }
+
         private void OnTriggerEnter2D(Collider2D col)
         {
             if (col.gameObject.CompareTag("WinPoint"))
@@ -54,20 +61,31 @@ namespace TarodevController
                 PlayerWin = true;
                 print("col");
             }
+            {
+                if (col.gameObject.CompareTag("DoubleJump"))
+                {
+                    canDoubleJump = true;
 
+                }
+            }
         }
+
         private void WinGame()
         {
-            if (PlayerWin == true)
+            if (PlayerWin)
             {
                 print("playerwin");
                 _stats.MaxSpeed = 0;
                 _stats.JumpPower = 0;
+                if (timer != null)
+                {
+                    timer.IsGamePaused = true;
+                }
             }
-           
         }
 
-
+       
+      
 
         private void Update()
         {
@@ -83,26 +101,22 @@ namespace TarodevController
                 _stats.MaxFallSpeed = 60;
                 _stats.JumpPower = 10;
             }
+
+
         }
+
         private void Flip()
         {
+            if (_frameInput.Move.x != 0)
             {
-                // Only flip if there is horizontal movement
-                if (_frameInput.Move.x != 0)
+                bool movingRight = _frameInput.Move.x > 0;
+                if (movingRight != isFacingRight)
                 {
-                    bool movingRight = _frameInput.Move.x > 0;
-                    if (movingRight != isFacingRight)
-                    {
-                        isFacingRight = movingRight;
-                        Vector3 localScale = transform.localScale;
-                        localScale.x *= -1f;
-                        transform.localScale = localScale;
-                    }
+                    isFacingRight = movingRight;
+                    Vector3 localScale = transform.localScale;
+                    localScale.x *= -1f;
+                    transform.localScale = localScale;
                 }
-            }
-            if (isFacingRight == false)
-            {
-                print("fli");
             }
         }
 
@@ -127,6 +141,7 @@ namespace TarodevController
                 _timeJumpWasPressed = _time;
             }
         }
+
         private void HandleDashing()
         {
             if (Time.time - lastDashTime < _stats.DashCooldown || isDashing)
@@ -139,57 +154,58 @@ namespace TarodevController
                 StartCoroutine(Dash());
             }
         }
+
         private IEnumerator Dash()
         {
             isDashing = true;
             lastDashTime = Time.time;
 
-            // Ativa o TrailRenderer
+            // Activate TrailRenderer
             if (tr != null)
             {
                 tr.emitting = true;
             }
 
-            // Armazena o valor original da gravidade e das outras propriedades
+            // Store the original values
             float originalFallAcceleration = _stats.FallAcceleration;
             float originalJumpPower = _stats.JumpPower;
             float originalJumpEndEarlyGravityModifier = _stats.JumpEndEarlyGravityModifier;
             float originalJumpAscentGravityModifier = _stats.JumpAscentGravityModifier;
             float originalMaxFallSpeed = _stats.MaxFallSpeed;
 
-            // Zera a gravidade e outras propriedades relacionadas ao movimento vertical
+            // Set the vertical movement values to zero
             _stats.FallAcceleration = 0;
             _stats.JumpPower = 0;
             _stats.JumpEndEarlyGravityModifier = 0;
             _stats.JumpAscentGravityModifier = 0;
             _stats.MaxFallSpeed = 0;
 
-            // Zera a velocidade vertical do jogador
+            // Set the player's vertical velocity to zero
             _rb.velocity = new Vector2(0, 0);
 
-            // Armazena a posição vertical atual do jogador
+            // Store the player's initial Y position
             float initialYPosition = transform.position.y;
 
-            // Define a velocidade do dash
+            // Set the dash speed and direction
             float dashDirection = isFacingRight ? 1 : -1;
             _frameVelocity.x = _stats.DashPower * dashDirection;
 
             float dashEndTime = Time.time + _stats.DashDuration;
             while (Time.time < dashEndTime)
             {
-                // Mantém a posição y do jogador constante
+                // Maintain the player's Y position
                 transform.position = new Vector3(transform.position.x, initialYPosition, transform.position.z);
                 yield return null;
             }
 
-            // Restaura o valor original das propriedades
+            // Restore the original values
             _stats.FallAcceleration = originalFallAcceleration;
             _stats.JumpPower = originalJumpPower;
             _stats.JumpEndEarlyGravityModifier = originalJumpEndEarlyGravityModifier;
             _stats.JumpAscentGravityModifier = originalJumpAscentGravityModifier;
             _stats.MaxFallSpeed = originalMaxFallSpeed;
 
-            // Desativa o TrailRenderer
+            // Deactivate TrailRenderer
             if (tr != null)
             {
                 tr.emitting = false;
@@ -197,6 +213,7 @@ namespace TarodevController
 
             isDashing = false;
         }
+
         private void ApplyMoviement()
         {
             if (!isDashing)
@@ -205,20 +222,17 @@ namespace TarodevController
             }
         }
 
-
         private void FixedUpdate()
         {
             CheckCollisions();
-
             HandleJump();
             HandleDirection();
             HandleGravity();
-            
             ApplyMovement();
         }
 
         #region Collisions
-        
+
         private float _frameLeftGrounded = float.MinValue;
         private bool _grounded;
 
@@ -255,7 +269,6 @@ namespace TarodevController
 
         #endregion
 
-
         #region Jumping
 
         private bool _jumpToConsume;
@@ -263,6 +276,7 @@ namespace TarodevController
         private bool _endedJumpEarly;
         private bool _coyoteUsable;
         private float _timeJumpWasPressed;
+        private bool _hasDoubleJumped; // flag to check if double jump has been used
 
         private bool HasBufferedJump => _bufferedJumpUsable && _time < _timeJumpWasPressed + _stats.JumpBuffer;
         private bool CanUseCoyote => _coyoteUsable && !_grounded && _time < _frameLeftGrounded + _stats.CoyoteTime;
@@ -273,7 +287,7 @@ namespace TarodevController
 
             if (!_jumpToConsume && !HasBufferedJump) return;
 
-            if (_grounded || CanUseCoyote) ExecuteJump();
+            if (_grounded || CanUseCoyote || (canDoubleJump && !_hasDoubleJumped)) ExecuteJump();
 
             _jumpToConsume = false;
         }
@@ -284,6 +298,13 @@ namespace TarodevController
             _timeJumpWasPressed = 0;
             _bufferedJumpUsable = false;
             _coyoteUsable = false;
+
+            if (!_grounded && !CanUseCoyote)
+            {
+                _hasDoubleJumped = true; // set double jump flag
+                canDoubleJump = false; // disable further double jumps
+            }
+
             _frameVelocity.y = _stats.JumpPower;
             Jumped?.Invoke();
         }
@@ -314,12 +335,13 @@ namespace TarodevController
             if (_grounded && _frameVelocity.y <= 0f)
             {
                 _frameVelocity.y = _stats.GroundingForce;
+                _hasDoubleJumped = false; // reset double jump when grounded
             }
             else
             {
                 var inAirGravity = _stats.FallAcceleration;
 
-                // Aplica a modificação de gravidade durante a subida
+                // Apply gravity modification during ascent
                 if (_frameVelocity.y > 0)
                 {
                     inAirGravity *= _stats.JumpAscentGravityModifier;
@@ -343,6 +365,7 @@ namespace TarodevController
         {
             if (_stats == null) Debug.LogWarning("Please assign a ScriptableStats asset to the Player Controller's Stats slot", this);
         }
+
 #endif
     }
 
@@ -356,12 +379,7 @@ namespace TarodevController
     public interface IPlayerController
     {
         public event Action<bool, float> GroundedChanged;
-
         public event Action Jumped;
         public Vector2 FrameInput { get; }
     }
-
-
-
-
 }
