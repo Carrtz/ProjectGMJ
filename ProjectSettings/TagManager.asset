@@ -9,6 +9,7 @@ TagManager:
   - WinPoint
   - Death
   - DoubleJump
+  - TimeSave
   layers:
   - Default
   - TransparentFX

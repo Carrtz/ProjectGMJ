@@ -1,43 +1,40 @@
 using System.Collections;
-using System.Collections.Generic;
-using TarodevController;
 using UnityEngine;
+using TarodevController;
 
 public class PowerUps : MonoBehaviour
 {
-    private float originalMaxSpeed;
-    private GameObject SpeedPU;
-    [SerializeField] private ScriptableStats SO;
-    // Start is called before the first frame update
-    void Start()
+    private float sumSpeed;
+    private Vector3 originalPosition;
+    private Renderer objectRenderer;
+
+    private void Start()
     {
-        originalMaxSpeed = SO.MaxSpeed;
+        // Salva a posição original e obtém o renderer
+        originalPosition = transform.position;
+        objectRenderer = GetComponent<Renderer>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    private IEnumerator TemporarilyIncreaseSpeed(float newSpeed, float duration)
-    {
-        
-        SO.MaxSpeed = newSpeed;
-        Debug.Log("MaxSpeed temporariamente alterado para: " + newSpeed);
-
-
-        yield return new WaitForSeconds(duration);
-
-        SO.MaxSpeed = originalMaxSpeed;
-        Debug.Log("MaxSpeed restaurado para: " + originalMaxSpeed);
-    }
     private void OnCollisionEnter2D(Collision2D col)
     {
         if (col.gameObject.CompareTag("Player"))
         {
-            Destroy(gameObject);
-            StartCoroutine(TemporarilyIncreaseSpeed(15f, 3f));
+            col.gameObject.GetComponent<PlayerController>().PowerUpsSpeed(sumSpeed);
+            StartCoroutine(DeactivateAndReactivate());
         }
     }
 
+    private IEnumerator DeactivateAndReactivate()
+    {
+        // Desativa visualmente o objeto e o move para fora da tela
+        objectRenderer.enabled = false;
+        transform.position = new Vector3(1000, 1000, 1000); // Move o objeto para uma posição fora da vista
+
+        // Aguarda 3 segundos
+        yield return new WaitForSeconds(3f);
+
+        // Reposiciona e reativa visualmente o objeto
+        transform.position = originalPosition;
+        objectRenderer.enabled = true;
+    }
 }

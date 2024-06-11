@@ -14,14 +14,16 @@ namespace TarodevController
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
         [SerializeField] private GameObject WinPoint;
-        public bool PlayerWin = false; 
+        public bool PlayerWin = false;
         private bool isDashing = false;
         private float lastDashTime;
         [SerializeField] private TrailRenderer tr;
         private bool isFacingRight = true;
-        [SerializeField] public bool canDoubleJump = false; 
+        [SerializeField] public bool canDoubleJump = false;
         private Timer timer;
-     
+        private PowerUps powerUps;
+        float originalMaxSpeed;
+
         #region Interface
 
         public Vector2 FrameInput => _frameInput.Move;
@@ -34,9 +36,26 @@ namespace TarodevController
 
         private void Start()
         {
-          
+            originalMaxSpeed = _stats.MaxSpeed;
         }
-        
+        public void PowerUpsSpeed(float newSpeed)
+        {
+            StartCoroutine(TemporarilyIncreaseSpeed(5f, 3f));
+        }
+
+        private IEnumerator TemporarilyIncreaseSpeed(float newSpeed, float duration)
+        {
+            float originalMaxSpeed = _stats.MaxSpeed;
+            _stats.MaxSpeed += newSpeed;
+            Debug.Log("MaxSpeed temporariamente alterado para: " + newSpeed);
+
+
+            yield return new WaitForSeconds(duration);
+
+            _stats.MaxSpeed = originalMaxSpeed;
+            Debug.Log("MaxSpeed restaurado para: " + originalMaxSpeed);
+        }
+
 
         private void Awake()
         {
@@ -77,6 +96,7 @@ namespace TarodevController
                 print("playerwin");
                 _stats.MaxSpeed = 0;
                 _stats.JumpPower = 0;
+                
                 if (timer != null)
                 {
                     timer.IsGamePaused = true;
@@ -84,8 +104,8 @@ namespace TarodevController
             }
         }
 
-       
-      
+
+
 
         private void Update()
         {
@@ -101,9 +121,12 @@ namespace TarodevController
                 _stats.MaxFallSpeed = 60;
                 _stats.JumpPower = 10;
             }
-          
 
-
+            print(_stats.MaxSpeed);
+            if(_grounded) 
+            {
+                canDoubleJump = false;
+            }
         }
 
         private void Flip()

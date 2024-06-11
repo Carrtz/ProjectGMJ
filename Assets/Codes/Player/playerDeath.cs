@@ -66,6 +66,10 @@ public class playerDeath : MonoBehaviour
 
             Death = false;
         }
+        if(Input.GetKeyDown(KeyCode.R)) 
+        {
+            Death = true;
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D col)

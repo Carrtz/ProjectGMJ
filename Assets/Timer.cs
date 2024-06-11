@@ -15,10 +15,7 @@ public class Timer : MonoBehaviour
         currentTime = startTime;
         UpdateTimerText();
 
-        if (playerDeath == null)
-        {
-            Debug.LogError("playerDeath não foi atribuído no Timer.");
-        }
+      
     }
 
     void Update()
