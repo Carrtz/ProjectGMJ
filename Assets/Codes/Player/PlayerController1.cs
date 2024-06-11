@@ -19,7 +19,7 @@ namespace TarodevController
         private float lastDashTime;
         [SerializeField] private TrailRenderer tr;
         private bool isFacingRight = true;
-        [SerializeField] private bool canDoubleJump = false; // flag to check if double jump is available
+        [SerializeField] public bool canDoubleJump = false; // flag to check if double jump is available
         private Timer timer;
      
         #region Interface
@@ -101,6 +101,7 @@ namespace TarodevController
                 _stats.MaxFallSpeed = 60;
                 _stats.JumpPower = 10;
             }
+          
 
 
         }
