@@ -21,6 +21,7 @@ namespace TarodevController
         private bool isFacingRight = true;
         [SerializeField] public bool canDoubleJump = false; 
         private Timer timer;
+        private PowerUps powerUps
      
         #region Interface
 
@@ -34,8 +35,25 @@ namespace TarodevController
 
         private void Start()
         {
-          
+          originalMaxSpeed = _stats.MaxSpeed;
         }
+    private void PowerUpsSpeed(float newSpeed)
+            { 
+                StartCorroutine(TemporarilyIncreaseSpeed(newSpeed, 3f));
+            }
+        
+     private IEnumerator TemporarilyIncreaseSpeed(float newSpeed, float duration)
+    {
+        float originalMaxSpeed = _stats.MaxSpeed;
+        _stats.MaxSpeed += newSpeed;
+        Debug.Log("MaxSpeed temporariamente alterado para: " + newSpeed);
+
+
+        yield return new WaitForSeconds(duration);
+
+        _stats.MaxSpeed = originalMaxSpeed;
+        Debug.Log("MaxSpeed restaurado para: " + originalMaxSpeed);
+    }
         
 
         private void Awake()
