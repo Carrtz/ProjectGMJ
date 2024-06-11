@@ -6,13 +6,13 @@ public class playerDeath : MonoBehaviour
     public bool Death = false;
     [SerializeField] private GameObject inicialPos;
     [SerializeField] private GameObject PlayerPos;
-    [SerializeField] private Timer timer; // Referência ao Timer
-    [SerializeField] private ScriptableStats stats; // Assign this in the Inspector
-    [SerializeField] private PlayerController playerController; // Assign this in the Inspector
+    [SerializeField] private Timer timer; 
+    [SerializeField] private ScriptableStats stats; 
+    [SerializeField] private PlayerController playerController; 
 
     void Start()
     {
-        // Ensure that stats and playerController are assigned in the Inspector
+     
         if (stats == null)
         {
             Debug.LogError("ScriptableStats is not assigned in the Inspector.");
@@ -47,7 +47,6 @@ public class playerDeath : MonoBehaviour
                 Debug.LogError("Timer is not assigned");
             }
 
-            // Resetando a posição do jogador
             if (inicialPos != null && PlayerPos != null)
             {
                 PlayerPos.transform.position = inicialPos.transform.position;

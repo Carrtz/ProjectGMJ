@@ -21,14 +21,13 @@ public class PowerUps : MonoBehaviour
     }
     private IEnumerator TemporarilyIncreaseSpeed(float newSpeed, float duration)
     {
-        // Altere o valor de MaxSpeed para o novo valor
+        
         SO.MaxSpeed = newSpeed;
         Debug.Log("MaxSpeed temporariamente alterado para: " + newSpeed);
 
 
         yield return new WaitForSeconds(duration);
 
-        // Restaure o valor original de MaxSpeed
         SO.MaxSpeed = originalMaxSpeed;
         Debug.Log("MaxSpeed restaurado para: " + originalMaxSpeed);
     }

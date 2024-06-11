@@ -14,12 +14,12 @@ namespace TarodevController
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
         [SerializeField] private GameObject WinPoint;
-        public bool PlayerWin = false; // Mudado para público
+        public bool PlayerWin = false; 
         private bool isDashing = false;
         private float lastDashTime;
         [SerializeField] private TrailRenderer tr;
         private bool isFacingRight = true;
-        [SerializeField] public bool canDoubleJump = false; // flag to check if double jump is available
+        [SerializeField] public bool canDoubleJump = false; 
         private Timer timer;
      
         #region Interface
